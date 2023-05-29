@@ -2,10 +2,21 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
 import pandas as pd
+from datetime import datetime
+import os
+import sys
+
+# Preparing script before we convert it to executable
+application_path = os.path.dirname(sys.executable)
+
+# get date in format MMDDYYYY
+now = datetime.now()
+month_day_year = now.strftime("%m%d%Y")
 
 web = 'https://www.thesun.co.uk/sport/football/'
-path = '"C:\\Users\\ymorii\\Downloads\\chromedriver_win32\\chromedriver.exe"'  # introduce path here
-# add headless mode
+path = '/Users/frankandrade/Downloads/chromedriver'  # introduce path here
+
+# Headless mode
 options = Options()
 options.headless = True
 driver_service = Service(executable_path=path)
@@ -25,8 +36,11 @@ for container in containers:
     subtitles.append(subtitle)
     links.append(link)
 
+# Exporting data to the same folder where the executable will be located
 my_dict = {'title': titles, 'subtitle': subtitles, 'link': links}
 df_headlines = pd.DataFrame(my_dict)
-df_headlines.to_csv('headline-headless.csv')
+file_name = f'football_headlines_{month_day_year}.csv'
+final_path = os.path.join(application_path, file_name)
+df_headlines.to_csv(final_path)
 
 driver.quit()
