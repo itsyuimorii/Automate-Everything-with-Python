@@ -47,3 +47,7 @@ df_headlines.to_csv(final_path)
 
 
 driver.quit()
+
+
+# convert pyfile into executable - pip install pyinstaller
+# pyinstaller --onefile news_automation.py

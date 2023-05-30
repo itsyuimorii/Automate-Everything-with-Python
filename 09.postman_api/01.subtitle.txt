@@ -1,0 +1,583 @@
+In today's video, we're going to be walking through a couple of examples
+
+using Postman to query open web APIs - showing how they're used in Postman,
+
+and why you might want to use Postman for that type
+
+of work - followed by some examples of how we could accomplish the same thing using Python.
+
+Now before we get started, I wanted to give just a little bit of background on
+
+why I'm doing this and what my intent is here.
+
+So I primarily work in networking, and all the fun stuff over the past couple of years has been
+
+all the different networking vendors trying to get different engineers into network automation. So
+
+I've attended a couple of different presentations on different technologies from different vendors,
+
+and I seem to see at least one pattern that seems to be present in my area.
+
+And that pattern is, we kind of show "hey, we have this product - it has open APIs - which is cool
+
+because everyone likes open APIs now.. and we can do cool stuff with that, by making this device all
+
+programmable and you know automated"... And then most of those demos and overviews and, you know,
+
+product intros - tend to end on: let's bring up Postman, let's show a couple of API calls,
+
+and then say "hey, isn't this cool??" and move on... Now my experience talking to some engineers
+
+in the room, is that some people understand "hey yeah, I get that this is the future - but
+
+I don't understand why I'm being told that Postman is the new CLI and that I'm going to be using this
+
+for device configuration in the future... Why do I need this bulky graphical user interface
+
+to create a new sub-interface on a network device, when it takes me two seconds on a command line".
+
+And the answer I usually give to that is: Postman is just one
+
+different tool that you can use to test out and play with device APIs. But really once you want
+
+to get into the true power of doing automation and bulk configurations and that type of stuff,
+
+you're usually probably not going to be doing a lot of that in Postman.. You'd pick up something
+
+like Ansible or Python or some other utility. So that gave me the idea a couple months back
+
+to write out a quick blog post, where I went through a couple of quick Postman API calls,
+
+showed how we'd do them / some of the basics, and then translating that over to how we could
+
+use that in a Python script - not only just doing the exact same work as we were doing in Postman,
+
+but also adding on to that a little bit to show where Python gets more flexible.
+
+So after a couple of months it seems like that blog post has gotten a bit more traffic than I had
+
+originally anticipated - so I figured it was about time to sit down and record a video - just as a,
+
+you know, companion medium in case there's anyone that prefers this type of format.
+
+Now that I've gotten that all out of the way, let's go ahead and jump into the examples & demo.
+
+So first thing - I'm going to go ahead and use this website called jsonplaceholder.typicode.com.
+
+This website offers a free online hosted web API that we can query using Postman or Python - and
+
+it's going to return a lot of dummy data in JSON format, which is super easy to parse and
+
+deal with. So if we go ahead and scroll down just a little bit, we'll look at some of the
+
+different endpoints that they have. So under resources, we see that they have a /posts,
+
+/comments, /albums, /photos, /todos, and /users. And in this example we're going to go ahead and
+
+focus on the user section - so let's go ahead and open up this in a new tab and take a look at what
+
+it looks like. So on this REST API endpoint, which is jsonplaceholder.typicode.com/users,
+
+we have a list of 10 different users. Each one looks like it has a user id, the user's name,
+
+username, email address, physical address, and some other contact information.
+
+So as a human our first thought might be "okay, hey, this list is only 10 users... everything's
+
+got nice and clean labels... it's easy enough for me to just look through here, and say
+
+'hey, what is the physical address of Ervin' and I can see he's user id 2, his address is victor
+
+plains suite 879". and we can get that information very quickly without having to worry about
+
+"why do I need to write some automation to parse through this? and, you know, find that
+
+information for me - it's easy enough for me to just look at it". And that makes sense, you know,
+
+this this data set is only 10 users - and it's something that we see on our screen. But maybe
+
+this isn't something that we have direct access to, or maybe it is a user list that's hundreds or
+
+tens of thousands of users long - and we needed to find exactly one person and we only have one
+
+piece of information, like their first name, last name, username, or their email address... and
+
+that's where we'd end up looking at something like automation using Python or Postman to be able to
+
+work through that data set a little bit more quickly and pull out exactly what we need.
+
+So now that we've reviewed real quick the data that we're working with, let's go ahead and take
+
+this over to Postman and get started with just figuring out the basics of querying this API.
+
+So jumping over to Postman, we're going to start off with this blank API request.
+
+To get started with Postman, this is not going to be an all-inclusive
+
+deep dive into all of the features and functions and things that Postman can do.
+
+We're just going to show off the bare minimum of what we need to do to be able to query a web API.
+
+So the first thing we need to do, is we see our different web types of requests..
+
+Right now by default it is set to a GET request. Some of the common request types that you'll use
+
+often, is GET: which is going to be used to query an API and pull data from it. We'll also see POST
+
+and PUT: which are usually going to be used for creating a new resource within the API.
+
+So let's say we had that user data set and we wanted to create a new user - we could use POST
+
+or PUT to be able to assemble that data locally for the user - so we generate its username,
+
+first name, last name, email address, and all that stuff... build that into a JSON data payload and
+
+then use one of those web requests to send it to the user database and create the new user.
+
+Now whether or not you use POST or PUT for that, usually it's going to depend on the web API.
+
+So you'll want to review the documentation of whatever you're looking at. There is a little
+
+bit of a difference between how those two operate - we won't get into that in this video.. but it
+
+is just something you want to be aware of, that some web services and APIs do use those a little
+
+bit interchangeably. The other typical request type that we might see sometimes is DELETE.
+
+Now DELETE does exactly what you would think it would do - which is, in which case, let's say
+
+we have a user that leaves our environment and we need to remove them from our user database.
+
+We would usually send an API request using the DELETE function. And normally when we do that,
+
+we're going to have to supply some sort of identifier that allows the API to know which user
+
+that we are actually deleting. And in the case of the data that we're dealing with, more than likely
+
+we're going to supply a user id number, since that's going to be unique to a single user in that
+
+DELETE request - to make sure that that's the user that ends up getting purged from the database.
+
+All right so by default this is going to start off as a GET request which is what
+
+we need to do - since we just want to query the API. So we'll go ahead and set that.
+
+In this text box, where we're going to enter our API URL
+
+we're going to go ahead and enter in the jsonplaceholder.typicode.com/users
+
+Now before we send this request, I just wanted to call out: just below our text box we see tabs for
+
+query parameters, authorization, headers, and body - along with a couple of other things..
+
+So if we wanted to get into sending additional data with our HTTP request, we can click on one
+
+of those to add additional configuration values. But for this basic request, we just want to go
+
+ahead and request a list of all of the users in the database - which we know to be 10.
+
+And so if we go over to the right side here, all we have to do is go ahead and click 'send'.
+
+Okay and pretty quickly we get our response back from the web server and so on the right
+
+side real quick, before we dive into the data, we can see that we got a 200 OK as our return
+
+status and it took about 362 milliseconds for us to get a response - and we can see the size
+
+of the data that was returned to us. And so if we go ahead and scroll through here real quick,
+
+we're seeing the exact same list of users that we were seeing on the test website - which is
+
+what we'd expect. Okay now back to the example of 'what if we had a list of 10,000 users, and
+
+we needed to pull out exactly one person' - where maybe we only knew their username. Now one way we
+
+can do that is just by using a query parameter within the HTTP request - so if we go back over
+
+to the JSON placeholder website real quick and scroll down - we can see under the routes section,
+
+that we do support a couple of different methods of pulling out an individual user or item out of
+
+the JSON list. So if we looked at the list of users again.... so let's say out of this entire
+
+user list we're looking for the user with username Delphine, and that's going to be user id 9 that's
+
+selected here. So let's go ahead and go back over to Postman and see one way that we could do this.
+
+So one way would be, directly in the query parameters - we can do a key for username and
+
+our value... we're going to go ahead and put in Delphine. And you can see that it auto updates the
+
+URL up here with the question mark, which indicates that we're going to be using a query
+
+parameter, and again our key value is username and we're looking for the value of Delphine.
+
+So now if we go ahead and send this request.... within a couple of seconds we get our JSON data
+
+response back to us. and in fact it only has the data for user id 9 - getting that data just for
+
+that single individual user in our database. Okay so this is about where we're going to wrap up with
+
+the Postman section of this. So we can see pretty quickly here that Postman is really helpful for
+
+testing out a new API, getting to understand what query parameters we're looking for,
+
+how the API functions... we can even see what the data that it returns looks like,
+
+and what formats and key value pairs that we need. And so this is what Postman is really good for:
+
+testing, playing around with, validating what the data looks like... and sometimes it's super great
+
+if you're writing a Python script and you're not getting the data back in the format you
+
+want - or the API call is not functioning correctly... opening up Postman real quick
+
+and just getting an interactive experience with an API can sometimes really help that.
+
+So in the context of network automation, we could use postman to do something like: query a network
+
+device for all of the ports and port status on the device. And we'd have to be able to go out to each
+
+individual device, call the API, and either get an entire list back or potentially query by each
+
+port id or port number or port name... but one way we'd be able to do this a little bit easier
+
+is by using Python. So now that we've shown very quickly how to use Postman to be able to
+
+query a REST API - let's go ahead and jump over to Python, where we're going to take a look at how to
+
+execute these exact same requests... and maybe make them a little bit more dynamic.
+
+Okay so right now I have VSCode open. The first thing that we're going to need to do is install
+
+the requests module. Requests is just a Python module that allows us to very quickly and easily
+
+make HTTP requests. While there are a number of different modules out there that do the
+
+same thing, requests seems to be one of the more popular ones - so that's what we'll use here.
+
+So first we'll install that with pip using 'pip install requests'
+
+Okay and that installs pretty quickly. So let's go ahead and start writing our script. The first
+
+thing that we'll go ahead and do, is import the requests module - so that we can use it in our
+
+script. Next, we'll define a variable called URL - and we'll use that to store the REST API endpoint
+
+that we're trying to call. After that, we'll make our GET request - using the 'requests.get'
+
+and supplying our URL variable. Whatever data that we get back from that HTTP request, we'll store in
+
+the 'response' variable. And then last but not least, we'll just go ahead and print that out as
+
+plain text using 'response.text'. We can also do things like check what our HTTP status code is,
+
+if we did 'response.status_code' - but we know that this is going to work, so let's just go ahead
+
+and print out just the raw text as it is. Now that we've got the script set up let's just go ahead
+
+and run this. And if I expand this, pretty quickly we see that we get our list of all of our users
+
+again. And as we scroll up, we can see user number 9 is Glenna - who were using as an example before.
+
+All right, so in our Postman example, after we queried the entire list of all of the users - we
+
+went back and modified our request to query for exactly one user based on username. In
+
+Python we're going to do the exact same thing, but let's modify that a little bit to make it
+
+more dynamic and something that we could embed in a script that would be usable by more people.
+
+And so the first thing that we're going to do, is we're going to go ahead and print out some text
+
+that just states 'search by username' - Next we'll use the input function to prompt the user to enter
+
+in whatever username that they want to use - and we'll assign that to the user variable. After we
+
+have that username, instead of just using the static URL, we'll create a new variable called
+
+'queryURL' - and that is going to be the existing base URL, plus a string that includes the question
+
+mark to indicate a query, the username key value, as well as the user name that is
+
+supplied to us by the user. After we have that information, we'll go ahead and make that same
+
+HTTP GET request using the new query URL. We'll tie that back to our response and again print out
+
+our 'response.text'... so let's go ahead and run this - and sure enough, we'll see it says 'search
+
+by username' - and we're given a prompt. So we'll go ahead and type in 'Delphine' - and pretty
+
+quickly we get returned that exact same JSON data output, of just that user id's information.
+
+Now for example, let's say we made a user or network port database, that we were supplying
+
+to our help desk. Instead of having them go into Postman and manually query out information out of
+
+a data set - we could write them a script like this, where perhaps instead of using user ids,
+
+we provide a script to our help desk that says "hey, search by the switch name & port id"
+
+and we'll dump out the current configuration and state to the help desk person - so they
+
+can quickly get a view as to whether that port is up, down, error disabled, or something like that.
+
+So now you might be thinking "hey this JSON data is still pretty readable,
+
+but what if I'm providing this to someone who doesn't look at this stuff regularly and has
+
+a harder time parsing through it" or maybe I want to build a script that is available
+
+to someone else who doesn't deal with this type of thing regularly... Can we sort through this
+
+data and just output individual pieces of it and format it nicely? And the answer is yes.
+
+So let's go ahead and take our existing script, where we're asking someone to provide
+
+a user id - and we're going to modify it, so that it just outputs that user id's phone number and
+
+email address, so that we can quickly search for the contact information for one specific user.
+
+And so before we modify this script, let's go ahead and look at that JSON data one more time.
+
+One thing you'll need to notice - is that using the data that's been provided to us in JSON,
+
+a lot of this translates to native Python objects like lists and dictionaries
+
+pretty easily. So anything in this statement right here, that is between these two big
+
+curly braces - if we use the JSON module, is automatically going to be parsed into
+
+a native Python dictionary. And just outside of that, you see the two normal square brackets...
+
+Those would be considered a python list. So technically we have a list here,
+
+but there is only one item - and that item is the dictionary that contains all of the user data.
+
+That'll come in handy in a minute, when we start actually writing out this script.
+
+First thing that we will need to do, is add an import for that JSON module. We won't have to
+
+install this via pip, because it is already native to Python. After that, we'll go ahead and get rid
+
+of this print statement at the end - because we no longer want to just dump out the raw JSON data.
+
+Instead we're going to go ahead and parse this out for our users to make it a little bit easier.
+
+So we'll go ahead and start by first taking that 'response.text' - which contains the JSON data.
+
+We'll use JSON to do a "json.loads()" which is 'load string'. We're taking a string of JSON text
+
+and loading that into a native Python object. Now again like I mentioned earlier,
+
+our list of one user is technically a embedded python dictionary, that's within a list.
+
+So what we'll do, is we'll tag a [0] onto the end of this - that will drop us into the first
+
+item in the list - which should just be that user dictionary. And then we'll assign that into the
+
+user data variable. After that, we should just be able to call the key value pairs out of the
+
+dictionary to assign that data. So for example real quick, we'll run through we'll add name,
+
+and that'll be equal to the name value out of the user data dictionary that we just created.
+
+Similarly, we'll do the same thing with email and phone number.
+
+Last but not least, we'll use a couple of Python f-strings to go ahead and pre-format and autofill.
+
+Even though we're searching by username, we're going to use the user's first and last name.
+
+So we'll go ahead and say "hey, this user by this name - can be reached by one of the two
+
+following methods". And we're going to provide both an email address and a phone number that
+
+you could reach them at. So again, let's go ahead and save this file - and give it a shot.
+
+And first we'll get prompted to search by username and we'll enter Delphine. And once we hit enter,
+
+we're pretty quickly returned that JSON data in the background - that is then iterated through,
+
+formatted, and presented to us just as a simple text that: "Glenna can be reached at one of the
+
+following two methods"... and we now have both her email address and phone number provided to us.
+
+So now that we've run through some basic examples of how we can query a REST API using Postman,
+
+and then used those same examples within Python and made them just a little bit more exciting.
+
+I did want to provide one last example, that shows a little bit more of this in the context
+
+of network automation. So again as someone who's a network engineer, you might still
+
+think "how is this relevant?", "why do I care?", "why can't I just do all this via the CLI?"...
+
+So for an example, I brought up my Meraki dashboard and you can see that there's a
+
+listing of a quite a handful of different devices. I only have maybe 10 or 15 devices on my network
+
+right now, but let's say that we were a large school or hospital or any other business,
+
+where we're using Meraki across our entire network... and let's say we work
+
+in an environment where either our employers or guests can bring in any device that they want to,
+
+to access the network. And we have an internal application development team that is trying to
+
+build out a new application to service users or self-service for guests or something like that...
+
+and they're trying to figure out which operating system that they should target first to hit the
+
+widest number of people that use it. Now one way we could do this obviously is we could just go
+
+into the Meraki dashboard, go ahead and export maybe our entire list of all of our clients,
+
+or have have someone manually go through this and assemble that list. But I wanted to show this
+
+real quickly in the context of like automation and using APIs, how we can take a quick 30 or 40 line
+
+Python script and automatically dump out a list of all of our clients in just a couple of seconds.
+
+So let's go ahead and jump back over to VSCode. And I have a new script on the screen right now.
+
+This is one that I've written already - and we'll just walk through it real quickly.
+
+So again we only need to import two modules here, both the requests module to make HTTP
+
+requests - as well as the JSON module to download and format and work with JSON data.
+
+Next, we go ahead and set our API URL - and the base URL for Meraki APIs is api.meraki.com/api/v1.
+
+Now we're not just going to be making calls directly to that v1 API - that is going to be
+
+the base URL, and then later on we will append URL paths to that, to get to the exact API
+
+endpoint that we want to query. Next, we do have to supply an HTTP header that contains
+
+our Meraki key - and that key is called "X-Cisco-Meraki-API-Key" - followed by the
+
+actual value of our API key that was generated by our Meraki dashboard. This is just a key that
+
+I'm using to test right now, and I'll go ahead and delete it after I finish making this video.
+
+Now, I do have all of my Python functions organized in the order that they're going
+
+to execute. So the first function that we have, is 'get organization id'...
+
+So if you've done much with Meraki networking before - all of your network clients connect
+
+to network devices, and network devices are organized into a top level network container,
+
+and you can have tons of different networks within an organization. And as an administrator you can
+
+oversee multiple different organizations. So the first thing that we're going to go ahead and do,
+
+is send a query to our base URL + /organizations - because we need to be able to figure out what
+
+organization id we belong to. Based on the Meraki APIs, we wouldn't be able to just send a request
+
+to the Meraki API saying "hey, give me a list of all the devices" - because we wouldn't know which
+
+network or which organization we specifically wanted to query. This script is example only - in
+
+my case I only have one organization id... S when we sort through that data, we're only going to go
+
+ahead and pick out that first organization - so that [0] - and then pull out the id key-value
+
+pair out of that JSON data that's returned to us. Once we have that data, we'll go ahead and return
+
+the unique organization id. And that's going to go ahead and be used by the next part of our code.
+
+So in the next function, we see that we want to get all of the Meraki networks that are available
+
+to us. And in this case, while I only have one Meraki network configured - we are going to go
+
+ahead and query the entire list of all Meraki networks and hand back a list of all of those
+
+networks. So again, walking through this very quickly, our new query URL is going to be the base
+
+URL - so api.meraki.com/api/v1 - followed by the 'organizations' keyword, and then the organization
+
+id that we pulled using that first function, then /networks to query the network containers that
+
+fall under that organization. So we go ahead and send that GET request, we return all of that data,
+
+and then we build a Python list containing all of the unique identifiers for each of the networks
+
+that we are managing. I know it seems like a couple of steps here, but once we have that
+
+we can move on to the fun part... and this is getting all of the network clients. So again,
+
+we're going to need to supply our organization id, plus our list of Meraki networks that we manage.
+
+And we're going to go ahead and start off by initializing a blank Python dictionary called
+
+'clientCount'. We also want to supply a couple of query parameters to our API call - in which case
+
+we're going to assign the variable 'q' and we're going to say how many devices per page and what
+
+our lookback time span is, for devices that have connected to our network. And then we'll iterate
+
+through every network that we manage, and we'll go ahead and query that /networks + the network
+
+id that we're looking at at the moment, followed by /clients to get a dump of all of the Meraki
+
+clients that are connected to that network. After that, we'll go ahead and send that... And again,
+
+this HTTP request looks a little bit different - because we have 'requests.get' and we're going to
+
+send our query URL, we're going to add our API key via the headers, and we're also going to provide
+
+our HTTP parameters in there - that are currently assigned to that 'q' variable.
+
+After we get all that back, again we will dump that JSON data into a variable called 'data' - and
+
+then we'll burn through every client that's in the list provided to us, and try to see if we
+
+can add it to our 'clientCount' dictionary. And so what this 'try' and 'except' pretty much does,
+
+is that if we had Android systems already in our list - we'll try to increment that value
+
+to plus one, and if that value already doesn't exist in our list, then we'll get an exception
+
+for a KeyError - because that key does not exist in the dictionary - in which case, we go ahead and
+
+create that key with a starting value of one, since we've counted one client in that list.
+
+After we're done iterating through all of that, we will go ahead and just print out a report of
+
+"here's all of the clients that we have by operating system and how many of them"...
+
+So now that we've run through that - let's go ahead and run this code and see what our output
+
+looks like. Okay and within a couple of seconds, we see that we get our response back - listing
+
+out all of the different operating systems. So one thing you might have seen in the Meraki dashboard,
+
+is a lot of the items that I had in my network right now, do show as a device
+
+type as "Other"... because Meraki doesn't have a built-in definition for what that device is.
+
+So we do see six devices up front, that are listed as a "None" type or there wasn't a client
+
+operating system provided. Below that, we do see that we have 3 Android devices, 1 Meraki device,
+
+2 Windows 10, and apparently my Nest thermostat comes up as a wireless memory card.... But again,
+
+if we went back to our example - where we had an application development team that was looking
+
+to deploy a new app and we needed to help them to determine which operating system to target first.
+
+While the data set in my home network is a little bit more limited, based on this list we could go
+
+back to them and say "hey, between Android and Windows 10, that's going to make up a majority of
+
+the clients - so those would be the two operating systems to target first for the app development".
+
+Okay and that wraps up just about everything that I wanted to cover in this video.
+
+As always, the example code that I've used today is located on
+
+my GitHub - and I will post a link to that in the description of this video.
+
+I hope that this was helpful for you and thank you for watching!!!!
